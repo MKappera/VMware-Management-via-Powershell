@@ -1,2 +1,7 @@
 # Get all VMs and show name, power state, host, datastore
 Get-VM | Select-Object Name, PowerState, @{Name="Host";Expression={$_.VMHost.Name}}, @{Name="Datastore(s)";Expression={($_.Datastore | Select Name) -join ","}}
+
+#Extend this to CSV file
+
+Get-VM | Select-Property Name, PowerState, VMHost, @{Name="Datastores";Expression={($_.Datastore | Select Name) -join ","}} | Export-CSV -Path "VM_Inventory_$(Get-Date -Format yyyyMMdd).csv" -NoTypeInformation
+
