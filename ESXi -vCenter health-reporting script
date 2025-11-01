@@ -1,0 +1,17 @@
+# Assume connected to vCenter
+
+# 4.1 ESXi host summary
+$hosts = Get-VMHost | Select-Object Name, Version, State, @{Name="CPUUsage(%)";Expression={[math]::Round($_.CpuUsageMhz / $_.CpuTotalMhz *100,2)}}, @{Name="MemUsage(%)";Expression={[math]::Round($_.MemoryUsageMB / $_.MemoryTotalMB *100,2)}}
+
+# 4.2 Datastore summary
+$datastores = Get-Datastore | Select-Object Name, CapacityGB, FreeSpaceGB, @{Name="FreePercent";Expression={[math]::Round($_.FreeSpaceGB / $_.CapacityGB *100,2)}}
+
+# 4.3 Snapshot summary (maybe old/large snapshots)
+$snapshots = Get-VM | Get-Snapshot | Select-Object VM, Name, Created, @{Name="AgeDays";Expression = ((Get-Date) - $_.Created).Days}, @{Name="SizeMB";Expression = [math]::Round($_.SizeMB,2)}
+
+# 4.4 Export reports
+$hosts | Export-CSV -Path "Hosts_Report_$(Get-Date -Format yyyyMMdd).csv" -NoTypeInformation
+$datastores | Export-CSV -Path "Datastores_Report_$(Get-Date -Format yyyyMMdd).csv" -NoTypeInformation
+$snapshots | Export-CSV -Path "Snapshots_Report_$(Get-Date -Format yyyyMMdd).csv" -NoTypeInformation
+
+# Optionally send email (requires SMTP settings)  
