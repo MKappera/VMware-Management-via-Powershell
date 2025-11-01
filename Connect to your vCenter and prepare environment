@@ -1,0 +1,10 @@
+# Install the module if needed
+Install-Module -Name VMware.PowerCLI -Scope CurrentUser
+
+# Configure PowerCLI settings (optional)
+Set-PowerCLIConfiguration -Scope User -ParticipateCEIP $false -InvalidCertificateAction Ignore -Confirm:$false
+
+# Connect to vCenter
+$vcServer = "vcenter.myorg.local" 
+$cred = Get-Credential -Message "Enter vCenter credentials"
+Connect-VIServer -Server $vcServer -Credential $cred
