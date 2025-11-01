@@ -1,0 +1,30 @@
+##3.1 Create a snapshot for a VM or group
+
+$vmName = "MyVM01"
+$snapName = "PreUpdate_$(Get-Date -Format yyyyMMdd_HHmm)"
+Get-VM -Name $vmName | New-Snapshot -Name $snapName -Description "Snapshot before update" -Memory:$false -Quiesce:$true
+
+
+##Or for a group (e.g., all VMs with tag “Test”):
+
+$Tag = "Test"
+$VMs = Get-VM | Get-TagAssignment | Where-Object {$_.Tag.Name -eq $Tag} | Select-Object -ExpandProperty Entity
+foreach ($vm in $VMs) {
+    $name = "PreUpdate_$(Get-Date -Format yyyyMMdd_HHmm)"
+    New-Snapshot -VM $vm -Name $name -Description "Pre-update snapshot" -Memory:$false -Quiesce:$true
+}
+
+##3.2 List snapshots (including size, age)
+
+Get-VM | Get-Snapshot | Select-Object VM, Name, Description, Created, @{Name="AgeDays";Expression = ((Get-Date) - $_.Created).Days}, @{Name="SizeMB";Expression = [math]::Round($_.SizeMB,2)} | Sort-Object AgeDays -Descending
+
+##3.3 Remove snapshots based on criteria
+
+# Example: remove snapshots older than 3 days
+$threshold = (Get-Date).AddDays(-3)
+Get-VM | Get-Snapshot | Where-Object {$_.Created -lt $threshold} | Remove-Snapshot -RemoveChildren -Confirm:$false
+
+##Also, you may want to consolidate snapshots or remove all for a VM:
+
+# Remove all snapshots for a given VM
+Get-VM -Name "MyVM01" | Get-Snapshot | Remove-Snapshot -RemoveChildren -Confirm:$false
