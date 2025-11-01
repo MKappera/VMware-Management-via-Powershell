@@ -1,0 +1,2 @@
+# Get all VMs and show name, power state, host, datastore
+Get-VM | Select-Object Name, PowerState, @{Name="Host";Expression={$_.VMHost.Name}}, @{Name="Datastore(s)";Expression={($_.Datastore | Select Name) -join ","}}
